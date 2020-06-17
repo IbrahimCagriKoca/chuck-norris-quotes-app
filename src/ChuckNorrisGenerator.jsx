@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 const FetchChuckNorrisQuote = (callback) => {
     fetch('http://api.icndb.com/jokes/random')
@@ -14,9 +14,9 @@ const ChuckNorrisGenerator = () => {
     const [quote, setQuote] = useState("Chuck");
     return (
         <div>
-            <div dangerouslySetInnerHTML={{ __html: quote }} />
             <button onClick={() => FetchChuckNorrisQuote(setQuote)}>Chuck Jokes</button>
         </div>
     )
 }
+
 export default ChuckNorrisGenerator;

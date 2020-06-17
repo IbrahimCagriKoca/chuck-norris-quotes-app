@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import ChuckNorrisSearchBar from './ChuckNorrisSearchBar';
+import ChuckNorrisResultTable from './ChuckNorrisResultTable';
 
 const fetchAllChuckNorrisQuote = (callback) => {
     fetch('http://api.icndb.com/jokes')
@@ -10,64 +12,45 @@ const fetchAllChuckNorrisQuote = (callback) => {
         });
 }
 
-
-const renderJokeItemTableRow = (jokeItem) => {
-    return (
-        <tr key={`row-${jokeItem.id}`}>
-            <td>{jokeItem.id}</td>
-            <td>{<span dangerouslySetInnerHTML={{ __html: (jokeItem.joke) }} />}</td>
-        </tr>
-    );
-}
-
-const renderJokeTable = (jokes) => {
-    return (jokes.length > 0
-        ? (
-            <table>
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Joke</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {jokes.map(renderJokeItemTableRow)}
-                </tbody>
-            </table>
-        ) : (
-            <h2> No results found </h2>
-        )
-    );
-}
-
-
 const ChuckNorrisSearch = () => {
     const [allJokes, setAllJokes] = useState([]);
     const [searchedJokes, setSearchedJokes] = useState([]);
-    const [searchedText, setSearchedText] = useState("");
+    const [randomQuote, setRandomQuote] = useState([]);
+    const [renderMode, setRenderMode] = useState("");
+
     useEffect(() => {
         fetchAllChuckNorrisQuote((jokes) => {
             setAllJokes(jokes);
-            setSearchedJokes(jokes);
         })
     }, []);
-    useEffect(() => {
-        if (searchedText.length > 3) {
-            const lowerCaseSearchedText = searchedText.toLowerCase();
-            const filtered = allJokes.filter(jokeItem => jokeItem.joke.toLowerCase().indexOf(lowerCaseSearchedText) > 0);
-            setSearchedJokes(filtered);
-        } else {
-            setSearchedJokes(allJokes);
-        }
-    }, [searchedText]);
+
+    const filterJokes = (searchedText) => {
+        const lowerCaseSearchedText = searchedText.toLowerCase();
+        const filtered = allJokes.filter(jokeItem => jokeItem.joke.toLowerCase().indexOf(lowerCaseSearchedText) > 0);
+        setSearchedJokes(filtered);
+        setRenderMode('searchQuote');
+    }
+
+    const showRandomQuote = () => {
+        let randomQuoteItem = allJokes[Math.floor(Math.random() * allJokes.length)];
+        setRenderMode('randomQuote');
+        setRandomQuote(randomQuoteItem);
+    }
 
     return (
-        <div style={{ fontSize: '9px' }}>
-            <input placeholder="Search" name="search-text" type="text" onChange={(e) => setSearchedText(e.target.value)} />
+
+        <div id="search-container">
+            <h2>Chuck Norris Quotes</h2>
+            <ChuckNorrisSearchBar onSearch={filterJokes} />
             <br />
-            <span>Searched Text: <strong>{searchedText}</strong></span><br />
-            {renderJokeTable(searchedJokes)}
-        </div >
+            <button id="random-button" onClick={showRandomQuote}> Random Quote</button>
+            <br />
+            {renderMode === 'randomQuote' && (
+                <span id="result" dangerouslySetInnerHTML={{ __html: (randomQuote.joke) }} />)}
+            {renderMode === 'searchQuote' && (
+                <ChuckNorrisResultTable jokes={searchedJokes} />)}
+        </div>
+
     )
 }
 
